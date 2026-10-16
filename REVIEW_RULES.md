@@ -1,0 +1,5 @@
+- Flag any hardcoded secrets, keys or passwords.
+- Flag SQL built with string concatenation or f-strings.
+- Flag missing error handling and divide-by-zero risks.
+- Only comment on lines that were added or changed in the diff.
+- Do not comment on style or formatting.
