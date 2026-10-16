@@ -20,6 +20,9 @@ HEADERS = {
 # 1. Get the diff straight from GitHub
 url = f"https://api.github.com/repos/{REPO}/pulls/{PR_NUMBER}"
 diff = requests.get(url, headers=HEADERS).text
+if len(diff) > 60000:
+    print("Diff too large, skipping review.")
+    sys.exit(0)
 
 # 2. Ask Claude to review it
 rules = open("REVIEW_RULES.md").read()
@@ -65,10 +68,20 @@ else:
         )
 
 # 4. Post it on the pull request
-post_url = f"https://api.github.com/repos/{REPO}/issues/{PR_NUMBER}/comments"
-r = requests.post(
-    post_url,
-    headers={"Authorization": f"Bearer {TOKEN}"},
-    json={"body": body},
-)
-print("Posted!" if r.status_code == 201 else f"Failed: {r.status_code} {r.text}")
+# 4. Post it, or update the robot's old comment
+MARKER = "<!-- ai-code-reviewer -->"
+body = MARKER + "\n" + body
+comments_url = f"https://api.github.com/repos/{REPO}/issues/{PR_NUMBER}/comments"
+auth = {"Authorization": f"Bearer {TOKEN}"}
+
+existing = requests.get(comments_url, headers=auth).json()
+old = next((c for c in existing if MARKER in c.get("body", "")), None)
+
+if old:
+    r = requests.patch(old["url"], headers=auth, json={"body": body})
+    ok = r.status_code == 200
+else:
+    r = requests.post(comments_url, headers=auth, json={"body": body})
+    ok = r.status_code == 201
+
+print("Posted!" if ok else f"Failed: {r.status_code} {r.text}")
