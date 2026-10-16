@@ -23,6 +23,7 @@ An AI agent that reviews pull requests with Claude and posts its findings as a c
 3. Edit `REVIEW_RULES.md` to change what it looks for.
 
 ## Results
+<img width="594" height="332" alt="image" src="https://github.com/user-attachments/assets/0e2a6bdc-afc8-46a4-9e39-52cc4abfffa0" />
 
 Tested on 3 pull requests with planted bugs. It caught hardcoded credentials, unsafe SQL, and missing error handling, and it also found a real authentication bug I had not planted.
 
